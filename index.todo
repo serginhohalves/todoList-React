@@ -1,0 +1,217 @@
+Title: Projeto rect com hooks
+
+☐ Criando um projeto react:
+$ npx create-react-app react-to-do
+$ cd react-to-do
+$ npm run start
+
+☐ Criando uma lista de itens, para isso vamos remover todo o código desnecessário do nosso src/App.js, seu arquivo deve ficar igual a esse:
+
+    import React from 'react';
+    import './App.css';
+    function App() {
+      return (
+        <div className="App">
+    
+        </div>
+      );
+    }
+    export default App;
+
+ ☐ Criando uma pasta chamada: componente e nela criar um componente:
+
+ src/componentes/TodoList.js
+
+ ☐ Na declaracao do componente digite a seguinte funcao:
+ function TodoList({ todos, updateTodos }) {
+...
+}
+
+este compopnente irá exibir a lista de todos os itens em nossa tela.
+
+a parte principal do componente será: 
+    //TodoList
+    import React from 'react';
+    
+    function TodoList({ todos, updateTodos }) {
+      return (
+        <div className="todo-list">
+          {todos.map((todo, index) => (
+            <div
+              key={index}
+              className="todo">
+              Item {index + 1}: {todo.task}
+            </div>
+          ))}
+        </div>
+      );
+    };
+    
+    export default TodoList;
+
+☐ Crie a estilização do componente:
+
+☐ Antes de mais nada, precisamos importar o nosso Hook useState da biblioteca react, assim:
+
+import React, { useState } from 'react';
+
+Agora já podemos criar o nosso primeiro state usando Hooks, ele vai ficar assim:
+
+    const [todos, setTodos] = useState();
+
+    e a partir daqui, vamos criar o componente:
+
+
+☐ Escreva a funcao App conforme abaixo:
+
+function App() {
+    const [todos, setTodos] = useState([
+        { complete: false, task: "Read about MongoDb" },
+        { complete: false, task: "Create a React ToDo App" },
+        { complete: false, task: "Find my key" }
+      ]);
+  return (
+    <div className="App">
+      <TodoList todos={todos}></TodoList>
+    </div>
+  );
+}
+
+☐ Importe  o componente chamado TodoList: 
+import TodoList from './components/TodoForm';
+
+Escreva novos itens dentro da lista:
+
+☐ Crie um novo componente chamado TodoForm:
+Na mesma pasta do TodoList, crie um componente chamado TodoForm, 
+esse vai ser o componente responsável por criar e submeter novos items para a lista.
+
+☐ Crie o estado do TodoForm:
+const [userInput, setUserInput] = useState("");
+
+☐ crie o seu formulário:
+Para receber os valores do usuário, vamos criar uma função chamada handleSubmit, ela é acionada assim que o usuário pressiona enter para escreve uma nova tarefa.
+
+Na primeira linha temos que fazer e.preventDefault(), e é o evento que o formulário emite após ser submetido. E o comportamento padrão de uma formulário é recarregar a página, o que não é interessante para nós.
+E se caso o valor for uma string vazia "" o código não faz nada. Pois uma string vazia é falsy.
+
+Repare que nós estamos passando um objeto com duas propriedades (que segue o padrão definido no App.js), para o método, addTodo({ complete: false, task: userInput }).
+
+E por fim, na última linha do método, eu passo uma string vazia para o state, para limpar o valor do input, como expliquei lá em cima.
+
+const handleSubmit = e => {
+    e.preventDefault();
+    if (!userInput) return;
+    addTodo({ complete: false, task: userInput, });
+    setUserInput("");
+};
+
+☐ Dentro da funcao TodoForm escreva o formulario:
+return (
+        <form onSubmit={handleSubmit} className="todo-form">
+            <input
+                placeholder="New Task"
+                type="text"
+                className="input"
+                value={userInput}
+                onChange={e => setUserInput(e.target.value)}
+            />
+        </form>
+    );
+
+☐ Informe o componente TodoForm no App.js e o configure da seguinte forma:
+
+<TodoForm addTodo={(todo)=>{
+        if(todo.task.trim().length > 0) { // aqui temos um trim para remover os espaços em branco
+          setTodos([...todos, todo]); // aqui estamos adicionando o todo novo ao array de todos
+        }
+      }} 
+      />
+
+☐ Atualize a lista de itens:
+
+va até o TodoList e crie um método que marque a tarefa como concluída.
+
+    const handleComplete = index => {
+      const newTodos = [...todos];
+      newTodos[index].complete = !newTodos[index].complete;
+      setTodos(newTodos);
+    }
+
+    export default App;
+
+    o seu componente TodoList ficara assim:
+
+      import React from "react";
+
+      function TodoList({ todos, updateTodos }) {
+        const markComplete = (id) => {
+          const updatedList = todos.map((item, index) => {
+            if (id !== index) return item;
+            return { ...item, complete: !(item.complete)};
+          });
+          updateTodos(updatedList);
+        };
+        return (
+          <div className="todo-list">
+            {todos.map((todo, index) => (
+              <div
+                key={index}
+                className={`todo ${todo.complete ? "taskDone" : ""}`}
+                onClick={() => markComplete(index)}>
+                Item{index + 1}: {todo.task}
+              </div>
+            ))}
+          </div>
+        );
+      }
+      
+      export default TodoList;
+
+☐ Vamos agora Deletar o item de nossa lista
+
+no item TodoList inclua o seguinte trecho   de código:
+
+  import React from "react";
+
+function TodoList({ todos, updateTodos }) {
+  const removeTask = (index) => {
+    const updatedList = todos.filter((task, taskIndex) => {
+      return taskIndex !== index;
+    });
+    updateTodos(updatedList);
+  };
+  const markComplete = (id) => {
+    const updatedList = todos.map((item, index) => {
+      if (id !== index) return item;
+      return { ...item, complete: !item.complete };
+    });
+    updateTodos(updatedList);
+  };
+  return (
+    <div className="todo-list">
+      {todos.map((todo, index) => (
+        <div key={index}>
+          <div
+            className={`todo ${todo.complete ? "taskDone" : ""}`}
+            onClick={() => markComplete(index)}
+          >
+            Item{index + 1}: {todo.task}
+          </div>
+
+          <div>
+            <button className="button" onClick={() => removeTask(index)}>
+              Delete
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default TodoList;
+  
+
+
+
